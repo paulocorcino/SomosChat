@@ -1,11 +1,22 @@
+#!/bin/bash
+
+read -p "Insert URL your RocketChat: " url
+
+if [[ -n "$url" ]]
+then
+    echo "Install RC on $url"
+else
+    echo "URL is required"
+    exit 1
+fi
+
 sudo apt-get -y update
 apt install snapd nginx -y
 sudo snap install rocketchat-server
 
 rm /etc/nginx/sites-enabled/default
-sudo nano /etc/nginx/sites-enabled/default
 
-# inserir na no arquivo rocketchat.conf
+cat >/etc/nginx/sites-enabled/default <<EOL
 
 upstream rocket_backend {
   server 127.0.0.1:3000;
@@ -36,9 +47,10 @@ server {
         proxy_redirect off;
     }
 }
+EOL
 
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d rcparaty.somos.chat -m paulo.corcino@somos.chat --agree-tos 
+sudo certbot --nginx -d $url -m paulo.corcino@somos.chat --agree-tos 
 sudo systemctl restart nginx
